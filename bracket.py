@@ -47,21 +47,8 @@ def create_matchups(microbes):
     for pair in bye_pairs:
         all_pairs.append(pair)
 
-    # Begin rounds
-    rounds = [all_pairs]
-    current_round = [winner_from_match(m1, m2) for m1, m2 in all_pairs if winner_from_match(m1, m2) is not None]
-
-    while len(current_round) > 1:
-        next_round = []
-        random.shuffle(current_round)
-        while len(current_round) >= 2:
-            next_round.append((current_round.pop(), current_round.pop()))
-        if current_round:
-            next_round.append((current_round.pop(), {'name': 'BYE', 'type': '', 'student': ''}))
-        rounds.append(next_round)
-        current_round = [winner_from_match(m1, m2) for m1, m2 in next_round if winner_from_match(m1, m2) is not None]
-
-    return rounds
+    # Return only the first round
+    return [all_pairs]
 
 def winner_from_match(m1, m2):
     if m1['name'] == 'BYE' and m2['name'] == 'BYE':
