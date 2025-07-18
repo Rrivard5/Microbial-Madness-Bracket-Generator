@@ -22,40 +22,57 @@ def create_matchups(microbes):
         if group:
             leftovers.append(group.pop())
 
-    # Try to match leftover students with BYEs first
+    # Try to match leftovers with BYEs if possible
     for leftover in leftovers:
-        bye_found = False
+        paired = False
         for i, (m1, m2) in enumerate(all_pairs):
             if m2['name'] == 'BYE':
                 all_pairs[i] = (m1, leftover)
-                bye_found = True
+                paired = True
                 break
-        if not bye_found:
-            all_pairs.append((leftover, {"name": "BYE", "type": "", "student": ""}))
+        if not paired:
+            all_pairs.append((leftover, {'name': 'BYE', 'type': '', 'student': ''}))
 
-    # Add any unmatched BYEs in pairs if even number
-    byes = [m for m1, m2 in all_pairs for m in (m1, m2) if m['name'] == 'BYE']
-    unmatched_byes = [b for b in byes if all_pairs.count((b, {"name": "BYE", "type": "", "student": ""})) == 0]
-    if len(unmatched_byes) % 2 == 0:
-        for i in range(0, len(unmatched_byes), 2):
-            all_pairs.append((unmatched_byes[i], unmatched_byes[i+1]))
+    # Ensure any leftover BYEs are paired together
+    bye_microbes = [m for m1, m2 in all_pairs for m in (m1, m2) if m['name'] == 'BYE']
+    used_byes = set()
+    bye_pairs = []
+    for i in range(len(bye_microbes)):
+        for j in range(i + 1, len(bye_microbes)):
+            if i not in used_byes and j not in used_byes:
+                bye_pairs.append((bye_microbes[i], bye_microbes[j]))
+                used_byes.add(i)
+                used_byes.add(j)
 
-    # Create rounds
+    for pair in bye_pairs:
+        all_pairs.append(pair)
+
+    # Begin rounds
     rounds = [all_pairs]
-    current = flatten_matchups(all_pairs)
-    while len(current) > 1:
-        new_round = []
-        random.shuffle(current)
-        while len(current) >= 2:
-            new_round.append((current.pop(), current.pop()))
-        if current:
-            new_round.append((current.pop(), {"name": "BYE", "type": "", "student": ""}))
-        rounds.append(new_round)
-        current = flatten_matchups(new_round)
+    current_round = [winner_from_match(m1, m2) for m1, m2 in all_pairs if winner_from_match(m1, m2) is not None]
+
+    while len(current_round) > 1:
+        next_round = []
+        random.shuffle(current_round)
+        while len(current_round) >= 2:
+            next_round.append((current_round.pop(), current_round.pop()))
+        if current_round:
+            next_round.append((current_round.pop(), {'name': 'BYE', 'type': '', 'student': ''}))
+        rounds.append(next_round)
+        current_round = [winner_from_match(m1, m2) for m1, m2 in next_round if winner_from_match(m1, m2) is not None]
+
     return rounds
 
-def flatten_matchups(matchups):
-    return [m1 for m1, m2 in matchups if m1['name'] != 'BYE'] + [m2 for m1, m2 in matchups if m2['name'] != 'BYE']
+def winner_from_match(m1, m2):
+    if m1['name'] == 'BYE' and m2['name'] == 'BYE':
+        return None
+    elif m1['name'] == 'BYE':
+        return m2
+    elif m2['name'] == 'BYE':
+        return m1
+    else:
+        # Arbitrarily pick one — could add user input later
+        return random.choice([m1, m2])
 
 def generate_bracket_image(rounds):
     width = 200 * len(rounds)
