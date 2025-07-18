@@ -17,9 +17,16 @@ def create_matchups(microbes):
         random.shuffle(group)
         while len(group) > 1:
             all_pairs.append((group.pop(), group.pop()))
-        if group:
-            # Unpaired gets a bye
-            all_pairs.append((group.pop(), {"name": "BYE", "type": "", "student": ""}))
+if len(group) == 1:
+    leftover = group.pop()
+    if [m for m1, m2 in all_pairs for m in (m1, m2) if m['name'] == 'BYE']:
+        # Find a BYE match already inserted and pair this one with it
+        for idx, (m1, m2) in enumerate(all_pairs):
+            if m2['name'] == 'BYE':
+                all_pairs[idx] = (m1, leftover)
+                break
+    else:
+        all_pairs.append((leftover, {\"name\": \"BYE\", \"type\": \"\", \"student\": \"\"}))
 
     # Create rounds by pairing winners
     rounds = [all_pairs]
