@@ -1,4 +1,5 @@
 import streamlit as st
+st.write("🧪 App starting...")
 from bracket import generate_bracket_image, create_matchups
 from parser import extract_microbe_info
 from utils import save_bracket_to_pdf
