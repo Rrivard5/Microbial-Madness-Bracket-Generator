@@ -24,3 +24,4 @@ def save_bracket_to_pdf(image: Image.Image) -> bytes:
     pdf.output(temp_path)
     with open(temp_path, "rb") as f:
         return f.read()
+# force rebuild
