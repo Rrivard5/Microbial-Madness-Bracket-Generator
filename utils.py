@@ -19,6 +19,7 @@ def save_bracket_to_pdf(image: Image.Image) -> bytes:
 
     pdf.image(temp_img_path, x=10, y=10, w=270)
 
-    pdf_output = BytesIO()
-    pdf.output(pdf_output)
-    return pdf_output.getvalue()
+temp_path = \"bracket_output.pdf\"
+pdf.output(temp_path)
+with open(temp_path, \"rb\") as f:
+    return f.read()
